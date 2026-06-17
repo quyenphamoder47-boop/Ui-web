@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pin 5000mAh mà vẫn hết ngày: Đây là lý do thực sự khiến pin Android "chạy về bê tông" - TechPulse</title>
+<meta name="description" content="Dung lượng pin smartphone Android ngày càng lớn, từ 4000mAh lên 5000, 6000mAh nhưng người dùng vẫn phải sạc mỗi tối. Bài viết phân tích kỹ thuật lý do thực sự đằng sau nghịch lý này.">
+<meta property="og:title" content="Pin 5000mAh mà vẫn hết ngày: Đây là lý do thực sự khiến pin Android không đủ dùng">
+<meta property="og:description" content="Dung lượng pin smartphone Android ngày càng lớn nhưng người dùng vẫn phải sạc mỗi tối. Phân tích kỹ thuật lý do thực sự đằng sau nghịch lý này.">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="vi_VN">
+<meta property="article:published_time" content="2026-05-22T08:00:00+07:00">
+<meta property="article:author" content="Trần Minh Khoa">
+<meta property="article:section" content="Mobile">
+<meta name="robots" content="index, follow">
+<style>
+:root {
+  --red: #D01F3C;
+  --red-dark: #A8162E;
+  --red-light: #F5E6E8;
+  --black: #111111;
+  --gray-900: #1A1A1A;
+  --gray-700: #444444;
+  --gray-500: #777777;
+  --gray-300: #CCCCCC;
+  --gray-200: #E0E0E0;
+  --gray-100: #F4F4F4;
+  --white: #FFFFFF;
+  --blue-link: #1A5FA8;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Source Serif 4', serif;
+  --font-ui: 'IBM Plex Sans', sans-serif;
+  --max-w: 720px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-ui);
+  background: var(--white);
+  color: var(--black);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+/* HEADER */
+#header {
+  position: sticky; top: 0; z-index: 1000;
+  background: var(--red);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px; height: 52px;
+}
+.logo {
+  font-family: var(--font-display); font-size: 32px; font-weight: 800;
+  color: var(--white); letter-spacing: -1px; text-decoration: none;
+  line-height: 1; cursor: pointer; user-select: none;
+}
+.logo span { color: rgba(255,255,255,.55); font-size: 10px; font-weight: 400; display: block; font-family: var(--font-ui); letter-spacing: .5px; margin-top: -4px; }
+.header-search-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--white); padding: 8px; display: flex; align-items: center;
+}
+.header-search-btn svg { width: 22px; height: 22px; }
+.header-menu-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--white); padding: 8px; display: flex; align-items: center; flex-direction: column; gap: 4px;
+}
+.header-menu-btn span { display: block; width: 22px; height: 2px; background: var(--white); border-radius: 2px; }
+.header-right { display: flex; align-items: center; gap: 4px; }
+
+/* SEARCH OVERLAY */
+#search-overlay {
+  display: none; position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(3px);
+}
+#search-overlay.active { display: flex; flex-direction: column; }
+.search-box {
+  background: var(--white); padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.search-box input {
+  flex: 1; border: none; outline: none;
+  font-size: 17px; font-family: var(--font-ui); color: var(--black);
+}
+.search-box button {
+  background: var(--red); border: none; border-radius: 6px;
+  width: 40px; height: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--white);
+}
+.search-box .close-search { background: var(--gray-100); color: var(--gray-700); }
+.search-tabs {
+  background: var(--white); border-bottom: 1px solid var(--gray-200);
+  display: flex;
+}
+.search-tab {
+  padding: 10px 20px; font-size: 14px; font-weight: 600; font-family: var(--font-ui);
+  cursor: pointer; color: var(--gray-500);
+  background: none; border: none; border-bottom: 3px solid transparent;
+}
+.search-tab.active { color: var(--red); border-bottom-color: var(--red); }
+.cat-grid {
+  background: var(--white); padding: 12px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  overflow-y: auto; flex: 1;
+}
+.cat-btn {
+  background: var(--gray-100); border: none; border-radius: 8px;
+  padding: 12px 8px; font-size: 14px; font-family: var(--font-ui);
+  color: var(--blue-link); cursor: pointer; text-align: center; transition: background .15s;
+}
+.cat-btn:hover { background: var(--red-light); color: var(--red); }
+.social-grid { background: var(--white); flex: 1; overflow-y: auto; }
+.social-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-bottom: 1px solid var(--gray-100);
+  text-decoration: none; color: var(--black);
+}
+.social-item:hover { background: var(--gray-100); }
+.social-icon {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.social-name { font-weight: 600; font-size: 15px; color: var(--blue-link); }
+.social-desc { font-size: 12px; color: var(--gray-500); }
+
+/* MENU DRAWER */
+#menu-drawer {
+  position: fixed; top: 0; right: -100%; bottom: 0; width: 280px;
+  background: var(--white); z-index: 3000;
+  transition: right .25s ease; box-shadow: -4px 0 20px rgba(0,0,0,.2); overflow-y: auto;
+}
+#menu-drawer.open { right: 0; }
+.drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 2999; }
+.drawer-overlay.show { display: block; }
+.drawer-header { background: var(--red); padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+.drawer-logo { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--white); }
+.drawer-close { background: none; border: none; color: var(--white); cursor: pointer; font-size: 24px; }
+.drawer-section { padding: 8px 0; border-bottom: 1px solid var(--gray-100); }
+.drawer-section-title { font-size: 11px; font-weight: 600; color: var(--gray-500); letter-spacing: 1px; text-transform: uppercase; padding: 8px 16px 4px; }
+.drawer-item { display: block; padding: 11px 16px; font-size: 15px; color: var(--black); text-decoration: none; }
+.drawer-item:hover { background: var(--gray-100); color: var(--red); }
+
+/* VIEWS */
+.view { display: none; }
+.view.active { display: block; }
+
+/* Article Meta */
+.article-meta {
+  padding: 14px 14px 0;
+  font-size: 12px; color: var(--gray-500); font-family: var(--font-ui);
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.article-category {
+  background: var(--red); color: var(--white);
+  font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.article-desc {
+  padding: 10px 14px 6px;
+  font-size: 14px; color: var(--gray-700); font-style: italic; font-family: var(--font-body);
+  border-left: 3px solid var(--red); margin: 0 14px; background: var(--gray-100); border-radius: 0 6px 6px 0;
+}
+.article-title {
+  padding: 12px 14px 6px;
+  font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1.2; color: var(--black);
+}
+.article-lead {
+  padding: 6px 14px 12px;
+  font-family: var(--font-body); font-size: 17px; font-weight: 600; color: var(--gray-700); line-height: 1.55;
+}
+.share-bar {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border-top: 1px solid var(--gray-100); border-bottom: 1px solid var(--gray-100);
+  font-size: 12px; color: var(--gray-500);
+}
+.share-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border: 1px solid var(--gray-300); border-radius: 20px;
+  background: none; cursor: pointer; font-size: 12px; font-family: var(--font-ui); color: var(--gray-700);
+}
+.share-btn:hover { border-color: var(--red); color: var(--red); }
+.share-copy { margin-left: auto; }
+
+/* TOC */
+#toc {
+  margin: 14px; background: var(--gray-100); border-radius: 10px; overflow: hidden;
+}
+.toc-header {
+  background: var(--red); color: var(--white); padding: 10px 14px;
+  font-weight: 700; font-size: 13px; letter-spacing: .5px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.toc-list { padding: 8px 0; }
+.toc-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 14px; font-size: 13px; color: var(--blue-link);
+  text-decoration: none; border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.toc-item:hover { background: var(--red-light); color: var(--red); }
+.toc-num { font-weight: 700; color: var(--red); min-width: 18px; }
+
+/* Article Body */
+.article-body { padding: 4px 14px; }
+.article-body h2 {
+  font-family: var(--font-display); font-size: 21px; font-weight: 700;
+  color: var(--black); margin: 24px 0 10px; line-height: 1.2;
+  border-left: 4px solid var(--red); padding-left: 10px;
+}
+.article-body p { font-family: var(--font-body); font-size: 16px; line-height: 1.75; color: var(--gray-900); margin-bottom: 14px; }
+.article-body figure { margin: 14px 0; }
+.article-body img { width: 100%; border-radius: 8px; display: block; }
+.article-body figcaption { font-size: 12px; color: var(--gray-500); text-align: center; margin-top: 6px; font-style: italic; }
+.keyword-bar { padding: 10px 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.keyword-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--gray-500); letter-spacing: .5px; }
+.keyword-tag {
+  padding: 4px 10px; background: var(--gray-100); border-radius: 4px;
+  font-size: 12px; color: var(--gray-700); text-transform: uppercase; font-weight: 600; cursor: pointer;
+}
+.keyword-tag:hover { background: var(--red-light); color: var(--red); }
+
+/* Info Box */
+.info-box {
+  margin: 16px 0; padding: 14px 16px; background: #EFF4FD;
+  border-left: 4px solid var(--blue-link); border-radius: 0 8px 8px 0;
+}
+.info-box .info-title { font-weight: 700; font-size: 13px; color: var(--blue-link); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+.info-box p { font-family: var(--font-body); font-size: 14px; line-height: 1.65; margin: 0; color: var(--gray-900); }
+
+/* Stat Grid */
+.stat-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+  margin: 16px 0; padding: 14px; background: var(--gray-100); border-radius: 10px;
+}
+.stat-item { text-align: center; }
+.stat-num { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--red); line-height: 1; }
+.stat-label { font-size: 11px; color: var(--gray-500); margin-top: 4px; line-height: 1.4; }
+
+/* Culprit List */
+.culprit-list { margin: 16px 0; }
+.culprit-item {
+  display: flex; gap: 12px; padding: 12px 14px;
+  border-bottom: 1px solid var(--gray-100); align-items: flex-start;
+}
+.culprit-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.culprit-title { font-weight: 700; font-size: 14px; color: var(--black); margin-bottom: 3px; }
+.culprit-desc { font-size: 13px; color: var(--gray-700); line-height: 1.5; }
+
+/* AD */
+.ad-modern {
+  margin: 12px 14px; border-radius: 8px; overflow: hidden;
+  background: linear-gradient(135deg, #f8f8f8, #efefef);
+  border: 1px solid var(--gray-200);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; min-height: 64px; gap: 10px;
+}
+.ad-modern-text { font-size: 11px; color: var(--gray-500); }
+.ad-modern-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--gray-300); text-transform: uppercase; }
+
+/* Related */
+.related-section { margin: 14px 0; }
+.section-title-bar {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  color: var(--white); background: var(--gray-700);
+  padding: 8px 14px; letter-spacing: .5px; text-transform: uppercase;
+}
+.related-item {
+  display: flex; gap: 12px; padding: 12px 14px;
+  border-bottom: 1px solid var(--gray-100); text-decoration: none; color: var(--black);
+}
+.related-item:hover { background: var(--gray-100); }
+.related-thumb {
+  width: 90px; height: 62px; border-radius: 6px; flex-shrink: 0;
+  object-fit: cover; background: var(--gray-200);
+}
+.related-cat { font-size: 11px; color: var(--red); font-weight: 600; text-transform: uppercase; }
+.related-title { font-size: 14px; font-weight: 600; line-height: 1.35; margin: 3px 0; color: var(--black); }
+.related-time { font-size: 11px; color: var(--gray-500); }
+
+/* Comments */
+.comment-section { padding: 14px; }
+.comment-section-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.comment-input-box { border: 1.5px solid var(--gray-300); border-radius: 10px; overflow: hidden; }
+.comment-input-box textarea {
+  width: 100%; padding: 12px; border: none; outline: none; resize: none;
+  font-family: var(--font-ui); font-size: 14px; line-height: 1.5; min-height: 80px; color: var(--black);
+}
+.comment-input-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--gray-100); border-top: 1px solid var(--gray-300);
+}
+.comment-submit {
+  background: var(--red); color: var(--white); border: none; border-radius: 6px;
+  padding: 7px 16px; font-size: 13px; font-weight: 600; font-family: var(--font-ui); cursor: pointer;
+}
+.comment-submit:hover { background: var(--red-dark); }
+.comments-list { padding: 0 14px 14px; }
+.comment-item { margin-bottom: 14px; }
+.comment-bubble { background: var(--gray-100); border-radius: 10px; padding: 10px 12px; }
+.comment-author { font-size: 13px; font-weight: 700; color: var(--black); }
+.comment-author .time { font-weight: 400; color: var(--gray-500); margin-left: 6px; font-size: 11px; }
+.comment-text { font-size: 14px; margin: 4px 0 8px; line-height: 1.5; color: var(--gray-900); }
+.comment-actions { display: flex; align-items: center; gap: 14px; }
+.comment-action-btn {
+  background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--gray-500); font-family: var(--font-ui);
+}
+.comment-action-btn:hover { color: var(--red); }
+.comment-action-btn.liked { color: var(--red); }
+.reply-btn { color: var(--blue-link); }
+.show-replies-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 12px; color: var(--blue-link); font-family: var(--font-ui);
+  padding: 4px 0 4px 12px; display: flex; align-items: center; gap: 5px; margin-top: 4px;
+}
+.show-replies-btn:hover { color: var(--red); }
+.replies { padding-left: 20px; margin-top: 8px; display: none; }
+.replies.open { display: block; }
+.reply-item { margin-bottom: 10px; }
+.reply-bubble { background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px; padding: 8px 10px; }
+.load-more-btn {
+  display: block; width: calc(100% - 28px); padding: 11px;
+  background: var(--gray-100); border: 1px solid var(--gray-300); border-radius: 8px;
+  font-size: 14px; font-weight: 600; font-family: var(--font-ui);
+  color: var(--gray-700); cursor: pointer; margin: 0 14px;
+}
+.load-more-btn:hover { background: var(--red-light); color: var(--red); }
+.no-more-comments { text-align: center; font-size: 13px; color: var(--gray-500); padding: 10px 14px; }
+.inline-reply-box {
+  margin: 8px 0 4px 0; border: 1.5px solid var(--red-light);
+  border-radius: 10px; overflow: hidden; background: var(--white);
+}
+.reply-to-label {
+  display: block; padding: 6px 10px 4px;
+  font-size: 12px; color: var(--gray-500); font-family: var(--font-ui);
+}
+.reply-to-label strong { color: var(--red); }
+.inline-reply-box textarea {
+  width: 100%; padding: 6px 10px 8px; border: none; outline: none; resize: none;
+  font-family: var(--font-ui); font-size: 14px; line-height: 1.5;
+  min-height: 56px; color: var(--black); background: var(--white);
+}
+.inline-reply-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  padding: 6px 10px; background: var(--gray-100); border-top: 1px solid var(--red-light);
+}
+.cancel-reply-btn {
+  background: none; border: 1px solid var(--gray-300); border-radius: 6px;
+  padding: 5px 12px; font-size: 13px; font-weight: 600; font-family: var(--font-ui);
+  color: var(--gray-700); cursor: pointer;
+}
+.cancel-reply-btn:hover { border-color: var(--gray-500); color: var(--black); }
+
+/* Footer */
+.site-footer { margin-top: 24px; border-top: 2px solid var(--gray-100); padding: 14px; }
+.site-footer .footer-brand { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--red); }
+.site-footer .footer-manager { font-size: 13px; color: var(--gray-700); margin: 4px 0 12px; }
+.site-footer .footer-addr { font-size: 12px; color: var(--gray-700); line-height: 1.7; margin-bottom: 10px; }
+.site-footer .footer-addr strong { color: var(--black); }
+.site-footer .footer-copy { font-size: 11px; color: var(--gray-500); line-height: 1.7; margin-top: 10px; border-top: 1px solid var(--gray-100); padding-top: 10px; }
+.footer-op { float: right; text-align: right; font-size: 11px; color: var(--gray-500); line-height: 1.4; }
+.footer-op strong { display: block; font-size: 13px; color: var(--black); }
+
+/* Search Results */
+.search-results-header {
+  padding: 12px 14px; border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.search-results-header h2 { font-size: 14px; font-family: var(--font-ui); }
+.search-results-header h2 span { font-weight: 700; color: var(--red); }
+.filter-bar {
+  display: flex; gap: 6px; padding: 10px 14px; overflow-x: auto;
+  scrollbar-width: none; border-bottom: 1px solid var(--gray-100);
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid var(--gray-300); background: none;
+  font-size: 12px; font-weight: 600; font-family: var(--font-ui);
+  color: var(--gray-700); cursor: pointer; transition: .15s;
+}
+.filter-chip.active { background: var(--red); color: var(--white); border-color: var(--red); }
+.filter-chip:hover:not(.active) { border-color: var(--red); color: var(--red); }
+.search-result-item {
+  display: flex; gap: 12px; padding: 12px 14px;
+  border-bottom: 1px solid var(--gray-100); text-decoration: none; color: var(--black); cursor: pointer;
+}
+.search-result-item:hover { background: var(--gray-100); }
+
+/* Error */
+.error-view {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 24px; text-align: center; min-height: 300px;
+}
+.error-icon { font-size: 56px; margin-bottom: 16px; }
+.error-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--black); margin-bottom: 8px; }
+.error-desc { font-size: 14px; color: var(--gray-500); line-height: 1.6; max-width: 260px; }
+.error-action {
+  margin-top: 20px; padding: 10px 24px; background: var(--red); color: var(--white);
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+  font-family: var(--font-ui); cursor: pointer;
+}
+.error-action:hover { background: var(--red-dark); }
+
+/* Links */
+.article-body a { color: var(--blue-link); }
+.highlight-link { color: var(--red); font-weight: 700; text-decoration: underline; }
+
+/* Progress */
+.read-progress { position: fixed; top: 52px; left: 0; right: 0; height: 3px; background: rgba(255,255,255,.2); z-index: 999; }
+.read-progress-bar { height: 100%; background: var(--white); width: 0%; transition: width .1s; }
+
+/* Hero */
+.article-hero {
+  width: 100%; aspect-ratio: 16/9; object-fit: cover;
+  display: block; background: var(--gray-200);
+}
+.article-hero-caption {
+  font-size: 12px; color: var(--gray-500); text-align: center;
+  padding: 6px 14px 2px; font-style: italic; font-family: var(--font-body);
+}
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.article-title, .article-lead, .article-body h2 { animation: fadeUp .35s ease both; }
+</style>
+</style>
+<link rel="canonical" href="https://techpulse.vn/mobile/pin-android-5000mah-het-nhanh-ly-do-ky-thuat">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="read-progress"><div class="read-progress-bar" id="progressBar"></div></div>
+
+<header id="header">
+  <div class="header-top">
+    <div class="logo" onclick="goHome()">
+      TechPulse
+      <span>TRANG THÔNG TIN ĐIỆN TỬ TỔNG HỢP</span>
+    </div>
+    <div class="header-right">
+      <button class="header-search-btn" onclick="openSearch()" title="Tìm kiếm">
+        <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+        </svg>
+      </button>
+      <button class="header-menu-btn" onclick="openMenu()" title="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeMenu()"></div>
+<nav id="menu-drawer">
+  <div class="drawer-header">
+    <span class="drawer-logo">TechPulse</span>
+    <button class="drawer-close" onclick="closeMenu()">✕</button>
+  </div>
+  <div class="drawer-section">
+    <div class="drawer-section-title">Chuyên mục</div>
+    <a class="drawer-item" href="#" onclick="navCat('Mobile');return false;">📱 Mobile</a>
+    <a class="drawer-item" href="#" onclick="navCat('AI');return false;">🤖 AI</a>
+    <a class="drawer-item" href="#" onclick="navCat('Internet');return false;">🌐 Internet</a>
+    <a class="drawer-item" href="#" onclick="navCat('Tin ICT');return false;">📡 Tin ICT</a>
+    <a class="drawer-item" href="#" onclick="navCat('Khám phá');return false;">🔭 Khám phá</a>
+    <a class="drawer-item" href="#" onclick="navCat('Gia dụng');return false;">🏠 Gia dụng</a>
+    <a class="drawer-item" href="#" onclick="navCat('Apps - Games');return false;">🎮 Apps - Games</a>
+    <a class="drawer-item" href="#" onclick="navCat('Đồ chơi số');return false;">🕹️ Đồ chơi số</a>
+    <a class="drawer-item" href="#" onclick="navCat('Sống');return false;">🌿 Sống</a>
+    <a class="drawer-item" href="#" onclick="navCat('Xe');return false;">🚗 Xe</a>
+    <a class="drawer-item" href="#" onclick="navCat('Blockchain');return false;">🔗 Blockchain</a>
+    <a class="drawer-item" href="#" onclick="navCat('eMagazine');return false;">📰 eMagazine</a>
+  </div>
+  <div class="drawer-section">
+    <div class="drawer-section-title">Theo dõi chúng tôi</div>
+    <a class="drawer-item" href="https://youtube.com/@techpulse" target="_blank" rel="noopener">▶️ YouTube</a>
+    <a class="drawer-item" href="https://facebook.com/techpulse" target="_blank" rel="noopener">📘 Facebook</a>
+    <a class="drawer-item" href="https://zalo.me/techpulse" target="_blank" rel="noopener">💬 Zalo</a>
+  </div>
+</nav>
+
+<div id="search-overlay">
+  <div class="search-box">
+    <svg width="18" height="18" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Nhập từ khóa tìm kiếm" autocomplete="off"
+      onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="close-search" onclick="closeSearch()">✕</button>
+    <button onclick="doSearch()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+      </svg>
+    </button>
+  </div>
+  <div class="search-tabs">
+    <button class="search-tab active" onclick="setSearchTab('cat',this)">Chuyên mục</button>
+    <button class="search-tab" onclick="setSearchTab('social',this)">Khác</button>
+  </div>
+  <div id="searchCatPanel" class="cat-grid">
+    <button class="cat-btn" onclick="doSearchCat('Mobile')">Mobile</button>
+    <button class="cat-btn" onclick="doSearchCat('AI')">AI</button>
+    <button class="cat-btn" onclick="doSearchCat('Internet')">Internet</button>
+    <button class="cat-btn" onclick="doSearchCat('Tin ICT')">Tin ICT</button>
+    <button class="cat-btn" onclick="doSearchCat('Khám phá')">Khám phá</button>
+    <button class="cat-btn" onclick="doSearchCat('Gia dụng')">Gia dụng</button>
+    <button class="cat-btn" onclick="doSearchCat('Thủ thuật')">Thủ thuật</button>
+    <button class="cat-btn" onclick="doSearchCat('Apps - Games')">Apps - Games</button>
+    <button class="cat-btn" onclick="doSearchCat('Đồ chơi số')">Đồ chơi số</button>
+    <button class="cat-btn" onclick="doSearchCat('Sống')">Sống</button>
+    <button class="cat-btn" onclick="doSearchCat('Blockchain')">Blockchain</button>
+    <button class="cat-btn" onclick="doSearchCat('Xe')">Xe</button>
+  </div>
+  <div id="searchSocialPanel" class="social-grid" style="display:none">
+    <a class="social-item" href="https://youtube.com/@techpulse" target="_blank" rel="noopener">
+      <div class="social-icon" style="background:#FF0000">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 3 12 3 12 3s-4.2 0-6.8.9c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v1.9C.7 15.3 1 17.4 1 17.4s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.6 21.6 12 21.6 12 21.6s4.2 0 6.8-.9c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.2v-1.9C23.3 9.1 23 7 23 7zM9.7 15.5v-7.3l8.1 3.7-8.1 3.6z"/></svg>
+      </div>
+      <div><div class="social-name">YouTube</div><div class="social-desc">Video review & tin tức công nghệ</div></div>
+    </a>
+    <a class="social-item" href="https://facebook.com/techpulse" target="_blank" rel="noopener">
+      <div class="social-icon" style="background:#1877F2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+      </div>
+      <div><div class="social-name">Facebook</div><div class="social-desc">Cập nhật tin nhanh mỗi ngày</div></div>
+    </a>
+    <a class="social-item" href="https://zalo.me/techpulse" target="_blank" rel="noopener">
+      <div class="social-icon" style="background:#0068FF">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12c0 2.76 1.12 5.26 2.93 7.07L3 21l2.07-1.87A9.95 9.95 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm1 13.5H9v-1.5h4V15.5zm2-3H9V11h6v1.5zm0-3H9V8h6v1.5z"/></svg>
+      </div>
+      <div><div class="social-name">Zalo</div><div class="social-desc">Nhóm cộng đồng công nghệ</div></div>
+    </a>
+  </div>
+</div>
+
+<!-- VIEW: ARTICLE -->
+<div id="view-article" class="view active">
+
+  <!-- Hero image — smartphone on table, real photo from Unsplash -->
+  <img class="article-hero"
+    src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&auto=format&fit=crop&q=80"
+    alt="Pin điện thoại Android hết nhanh"
+    loading="eager">
+  <p class="article-hero-caption">Dung lượng pin smartphone Android đã tăng gấp đôi trong 5 năm nhưng thời lượng thực tế không theo kịp. Ảnh minh họa.</p>
+
+  <div class="article-meta">
+    <span class="article-category">Mobile</span>
+    <span>Trần Minh Khoa</span>
+    <span>·</span>
+    <span>22/05/2026, 08:00</span>
+  </div>
+  <blockquote class="article-desc">
+    Smartphone Android ngày nay có pin 5000 đến 6000mAh, thậm chí 7000mAh, nhưng hàng triệu người dùng vẫn phải sạc mỗi đêm. Đây không phải chuyện nhà sản xuất lừa dối — mà là cuộc đua kỹ thuật không cân sức giữa dung lượng pin và mức tiêu thụ điện năng.
+  </blockquote>
+
+  <h1 class="article-title">Pin 5000mAh mà vẫn hết ngày: Đây là lý do thực sự khiến pin Android "chạy về bê tông"</h1>
+
+  <p class="article-lead">Bạn mua điện thoại mới, pin 5000mAh to đùng, nhà sản xuất hứa dùng được 2 ngày — nhưng chỉ qua một buổi chiều là phải cắm sạc. Tại sao pin càng ngày càng to nhưng vẫn không đủ dùng?</p>
+
+  <div class="share-bar">
+    <button class="share-btn" onclick="shareArticle('facebook')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+      Chia sẻ
+    </button>
+    <button class="share-btn" onclick="shareArticle('zalo')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0068FF" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+      Zalo
+    </button>
+    <button class="share-btn share-copy" onclick="copyLink()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copy link
+    </button>
+  </div>
+
+  <div class="ad-modern">
+    <div><div class="ad-modern-text">Không gian quảng cáo — <a href="#" style="color:var(--blue-link);font-size:11px;"></a></div></div>
+    <div class="ad-modern-label">Quảng cáo</div>
+  </div>
+
+  <!-- TOC -->
+  <div id="toc">
+    <div class="toc-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      MỤC LỤC BÀI VIẾT
+    </div>
+    <div class="toc-list">
+      <a class="toc-item" href="#section-1"><span class="toc-num">1</span>Pin lớn hơn, tiêu thụ điện cũng lớn hơn theo</a>
+      <a class="toc-item" href="#section-2"><span class="toc-num">2</span>Màn hình 120Hz và 5G là những "kẻ ngốn pin" thầm lặng nhất</a>
+      <a class="toc-item" href="#section-3"><span class="toc-num">3</span>Ứng dụng nền, vấn đề mà Android chưa bao giờ giải quyết triệt để</a>
+      <a class="toc-item" href="#section-4"><span class="toc-num">4</span>Pin lão hóa nhanh hơn bạn nghĩ</a>
+      <a class="toc-item" href="#section-5"><span class="toc-num">5</span>Những thói quen dùng máy khiến pin "bay" nhanh gấp đôi</a>
+      <a class="toc-item" href="#section-6"><span class="toc-num">6</span>Mẹo thực tế kéo dài pin cả ngày không cần sạc dự phòng</a>
+    </div>
+  </div>
+
+  <!-- Article Body -->
+  <div class="article-body">
+
+    <p>Năm 2019, smartphone Android phổ thông có pin khoảng 3000–3500mAh và bình thường dùng được cả ngày. Năm 2026, các máy tầm trung đã lên đến 5000–6000mAh, flagship thậm chí 7000mAh — nhưng cảm giác "hết pin nhanh" vẫn là điều hàng triệu người dùng phàn nàn mỗi ngày. Điều gì đang xảy ra?</p>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-num">+80%</div>
+        <div class="stat-label">Dung lượng pin tăng từ 2019–2026</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">120Hz</div>
+        <div class="stat-label">Tần số màn hình phổ thông hiện nay</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">3×</div>
+        <div class="stat-label">Mức tiêu thụ 5G so với 4G khi tải file</div>
+      </div>
+    </div>
+
+    <h2 id="section-1">Pin lớn hơn, tiêu thụ điện cũng lớn hơn theo</h2>
+    <p>Nghịch lý lớn nhất của thị trường smartphone hiện đại là: pin tăng dung lượng để đáp ứng nhu cầu, nhưng chính những tính năng mới được thêm vào cũng tiêu thụ nhiều điện hơn theo cấp số nhân. Đây là bài toán "thêm nước vào chậu trong khi lỗ thoát ngày càng to".</p>
+    <p>Năm 2020, màn hình 60Hz vẫn là chuẩn, camera sau chủ yếu 12–48MP, chip xử lý làm chủ yếu một việc. Năm 2026, màn hình 120Hz trở thành mặc định ngay ở tầm giá 5–7 triệu đồng, camera AI liên tục chạy nền để nhận diện cảnh vật, chip phải xử lý song song nhiều NPU task và kết nối 5G Sub-6GHz hoặc mmWave. Tất cả những tính năng đó đều ăn pin.</p>
+
+    <figure>
+      <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&auto=format&fit=crop&q=80"
+        alt="Điện thoại Android đang sạc pin"
+        loading="lazy">
+      <figcaption>Dù pin 5000mAh hay 7000mAh, mức tiêu thụ điện năng của smartphone 2026 vẫn khiến nhiều người phải cắm sạc trước khi kết thúc ngày làm việc.</figcaption>
+    </figure>
+
+    <p>Theo báo cáo từ AnandTech năm 2025, mức tiêu thụ điện năng khi xem video YouTube 1080p trên màn hình 120Hz cao gần 40% so với 60Hz ở cùng độ sáng. Nhân lên với 3–4 giờ mà trung bình người dùng Việt Nam nhìn vào điện thoại mỗi ngày, con số này là rất đáng kể.</p>
+
+    <h2 id="section-2">Màn hình 120Hz và 5G là những "kẻ ngốn pin" thầm lặng nhất</h2>
+    <p>Màn hình 120Hz có nghĩa là màn hình làm mới hình ảnh 120 lần mỗi giây — gấp đôi so với 60Hz tiêu chuẩn. Cảm giác cuộn mượt mà hơn, animation đẹp hơn, nhưng giá phải trả là panel AMOLED phải nhận lệnh từ chip và đẩy dữ liệu lên màn hình nhiều hơn đáng kể.</p>
+
+    <div class="info-box">
+      <div class="info-title">📊 Mức tiêu thụ pin thực tế so sánh</div>
+      <p>Màn hình 60Hz: ~200mW khi xem nội dung tĩnh. Màn hình 120Hz cùng điều kiện: ~280–310mW. Kết nối 5G Sub-6 đang tải dữ liệu: thêm khoảng 400–600mW so với 4G LTE. Camera AI nhận diện cảnh 24/7: thêm 80–120mW liên tục. Tổng cộng, một máy 2026 "bình thường" có thể tiêu thụ gấp 2–2.5 lần điện năng so với máy 2020 cùng dung lượng pin.</p>
+    </div>
+
+    <p>5G là câu chuyện tương tự. Khi điện thoại đang trong vùng phủ sóng 5G nhưng tín hiệu yếu — tình trạng rất phổ biến ở nhiều khu vực nội thành Hà Nội và TP.HCM — modem phải tăng công suất phát liên tục để bắt được sóng. Đây là nguyên nhân tại sao pin điện thoại hết nhanh hơn hẳn khi bạn đi vào tòa nhà cao tầng hoặc vùng chuyển tiếp 4G/5G.</p>
+
+    <figure>
+      <img src="https://images.unsplash.com/photo-1622445262846-bcab360980fe?w=400&auto=format&fit=crop&q=80"
+        alt="Smartphone tín hiệu 5G"
+        loading="lazy">
+      <figcaption>Tín hiệu 5G yếu khiến modem tiêu thụ thêm 400–600mW — tương đương một bóng đèn LED nhỏ chạy liên tục bên trong điện thoại bạn.</figcaption>
+    </figure>
+
+    <h2 id="section-3">Ứng dụng nền, vấn đề mà Android chưa bao giờ giải quyết triệt để</h2>
+    <p>Android từ lâu đã nổi tiếng với khả năng đa nhiệm linh hoạt — nhưng đây cũng là con dao hai lưỡi. Khác với iOS có cơ chế quản lý nền rất chặt, Android vẫn còn để nhiều ứng dụng tự do hoạt động, đồng bộ dữ liệu và gửi nhận thông báo ở chế độ nền mà người dùng không hay biết.</p>
+    <p>Thử làm một bài kiểm tra đơn giản: vào Cài đặt → Pin → Mức dùng pin theo ứng dụng. Rất nhiều người sẽ tá hỏa khi thấy Facebook, TikTok, Zalo hoặc thậm chí Google Play Services đang âm thầm chiếm 5–15% pin dù họ không hề mở những ứng dụng này trong nhiều giờ.</p>
+    <p>Nguyên nhân nằm ở các cơ chế như <strong>Wakelock</strong> (giữ CPU không ngủ), <strong>Wakelocks không đúng cách</strong> của một số app Việt Nam, và các dịch vụ đẩy thông báo hoạt động theo chu kỳ ngắn. Samsung One UI và MIUI có bộ giới hạn riêng nhưng nhiều app thương mại tìm cách vượt qua để đảm bảo thông báo được gửi đúng lúc.</p>
+
+    <h2 id="section-4">Pin lão hóa nhanh hơn bạn nghĩ</h2>
+    <p>Pin lithium-ion trong smartphone không phải là thứ vĩnh cửu. Sau khoảng 300–500 chu kỳ sạc đầy — tùy nhà sản xuất — pin bắt đầu mất dần dung lượng thực tế. Với người dùng sạc mỗi ngày một lần, con số đó tương đương chưa đầy một năm sử dụng.</p>
+
+    <div class="info-box">
+      <div class="info-title">🔋 Vòng đời thực của pin smartphone</div>
+      <p>Sau 300 chu kỳ sạc: pin còn giữ khoảng 80% dung lượng ban đầu. Sau 500 chu kỳ: xuống còn 70–75%. Sau 800 chu kỳ: nhiều máy chỉ còn 50–60%, thậm chí có hiện tượng tụt pin đột ngột. Sạc nhanh 65W–120W làm pin nóng hơn, đẩy nhanh tốc độ lão hóa thêm khoảng 15–20% so với sạc chậm 18–25W theo nghiên cứu của Viện Battery Intelligence (2024).</p>
+    </div>
+
+    <figure>
+      <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&auto=format&fit=crop&q=80"
+        alt="Sạc điện thoại nhanh"
+        loading="lazy">
+      <figcaption>Sạc nhanh 120W có thể đầy pin trong 15 phút, nhưng nhiệt độ cao trong quá trình sạc là một trong những nguyên nhân chính khiến pin lão hóa nhanh hơn.</figcaption>
+    </figure>
+
+    <p>Điều đáng lo ngại là hầu hết người dùng không để ý đến sức khỏe pin cho đến khi máy bỗng nhiên tắt ở 20% hoặc chỉ cầm được 4–5 tiếng từ máy mới mua được hơn 1 năm. Trên iOS, Apple cung cấp chỉ số "Tình trạng pin" rất rõ ràng. Android thì rải rác hơn, nhiều máy phải vào menu ẩn hoặc dùng app thứ ba mới xem được thông tin này.</p>
+
+    <h2 id="section-5">Những thói quen dùng máy khiến pin "bay" nhanh gấp đôi</h2>
+
+    <div class="culprit-list">
+      <div class="culprit-item">
+        <div class="culprit-icon">☀️</div>
+        <div>
+          <div class="culprit-title">Độ sáng màn hình tối đa hoặc tự động không ổn định</div>
+          <div class="culprit-desc">Màn hình là phần tử tiêu thụ điện nhiều nhất trên smartphone. Dùng 50% độ sáng thay vì 100% có thể tiết kiệm 25–35% pin của màn hình.</div>
+        </div>
+      </div>
+      <div class="culprit-item">
+        <div class="culprit-icon">🔴</div>
+        <div>
+          <div class="culprit-title">Luôn bật Wi-Fi, Bluetooth và định vị GPS cùng lúc</div>
+          <div class="culprit-desc">Mỗi radio module (Wi-Fi, BT, GPS, NFC) tiêu thụ một lượng điện nhỏ nhưng liên tục. Để tất cả bật khi không cần có thể ăn thêm 5–8% pin mỗi giờ.</div>
+        </div>
+      </div>
+      <div class="culprit-item">
+        <div class="culprit-icon">🔄</div>
+        <div>
+          <div class="culprit-title">Đồng bộ nền liên tục của quá nhiều ứng dụng</div>
+          <div class="culprit-desc">Email, lịch, ứng dụng mạng xã hội đồng bộ mỗi 5–15 phút. Nếu có 10–15 app làm điều này cùng lúc, tổng cộng chúng đánh thức CPU hàng trăm lần mỗi giờ.</div>
+        </div>
+      </div>
+      <div class="culprit-item">
+        <div class="culprit-icon">🎮</div>
+        <div>
+          <div class="culprit-title">Game và video streaming ở chất lượng cao</div>
+          <div class="culprit-desc">Game 3D nặng như PUBG Mobile hoặc Genshin Impact có thể kéo 3000–4000mW từ pin — nghĩa là máy 5000mAh chỉ cầm được khoảng 60–90 phút gaming liên tục.</div>
+        </div>
+      </div>
+      <div class="culprit-item">
+        <div class="culprit-icon">🌡️</div>
+        <div>
+          <div class="culprit-title">Dùng điện thoại khi đang sạc hoặc để máy nóng</div>
+          <div class="culprit-desc">Nhiệt độ pin trên 40°C làm lão hóa lithium-ion nhanh hơn gấp 2–3 lần so với điều kiện lý tưởng 20–25°C. Tránh để máy ngoài nắng hoặc trong xe ô tô ban ngày.</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="section-6">Mẹo thực tế kéo dài pin cả ngày không cần sạc dự phòng</h2>
+    <p>Tin tốt là hầu hết những vấn đề trên đều có thể cải thiện đáng kể bằng thay đổi cài đặt và thói quen, không cần mua thêm bất cứ thiết bị gì.</p>
+    <p><strong>Bật Adaptive Refresh Rate:</strong> Hầu hết máy Android 2023 trở lên hỗ trợ LTPO — tức là màn hình có thể tự điều chỉnh từ 1Hz đến 120Hz tùy nội dung. Đảm bảo bạn đang bật tính năng này thay vì khóa cứng 120Hz.</p>
+    <p><strong>Giới hạn ứng dụng nền:</strong> Vào Cài đặt → Ứng dụng → chọn từng app ít dùng → Tiêu thụ pin → chọn "Bị hạn chế". Làm điều này với 5–10 ứng dụng ít quan trọng nhất có thể cải thiện 15–25% thời lượng pin.</p>
+    <p><strong>Dùng chế độ Dark Mode trên màn hình OLED:</strong> Với màn hình AMOLED/OLED, pixel đen thực sự tắt hoàn toàn. Dark Mode toàn hệ thống có thể tiết kiệm 20–30% điện năng màn hình so với nền trắng ở cùng độ sáng.</p>
+    <p><strong>Tắt 5G khi không cần:</strong> Ở những vùng phủ sóng 5G yếu hoặc khi chỉ nhắn tin và gọi điện, chuyển sang 4G LTE sẽ cải thiện đáng kể thời lượng pin mà không ảnh hưởng trải nghiệm thực tế.</p>
+    <p><strong>Sạc thông minh:</strong> Cố gắng duy trì pin trong khoảng 20–80% thay vì sạc đầy 100% mỗi ngày. Nhiều máy Android giờ có tính năng "Optimized Charging" làm điều này tự động. Đây là cách đơn giản nhất để kéo dài tuổi thọ pin thêm 30–40%.</p>
+
+    <figure>
+      <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&auto=format&fit=crop&q=80"
+        alt="Cài đặt điện thoại Android tối ưu pin"
+        loading="lazy">
+      <figcaption>Vài thay đổi nhỏ trong cài đặt có thể cải thiện thời lượng pin lên 30–40% mà không cần mua thêm sạc dự phòng hay điện thoại mới.</figcaption>
+    </figure>
+
+    <p>Tóm lại, pin 5000mAh không phải là lừa đảo — nhưng nó cũng không phải phép màu. Trong thế giới smartphone 2026, cuộc chiến giữa dung lượng pin và mức tiêu thụ điện ngày càng khốc liệt hơn. Hiểu rõ điều gì đang ăn pin của bạn là bước đầu tiên để dùng máy cả ngày mà không lo nhìn chằm chằm vào thanh pin.</p>
+
+    <p style="color:var(--red);font-weight:700;font-size:14px;margin-top:4px;">
+      <a href="https://abc"> ≫ Xem thêm: Cách kiểm tra sức khỏe pin Android chính xác nhất — không cần ứng dụng thứ ba</a>
+    </p>
+
+    <div class="keyword-bar">
+      <span class="keyword-label">Từ khóa</span>
+      <span class="keyword-tag" onclick="doSearchKeyword('PIN ANDROID')">PIN ANDROID</span>
+      <span class="keyword-tag" onclick="doSearchKeyword('SMARTPHONE')">SMARTPHONE</span>
+      <span class="keyword-tag" onclick="doSearchKeyword('5G')">5G</span>
+      <span class="keyword-tag" onclick="doSearchKeyword('TIẾT KIỆM PIN')">TIẾT KIỆM PIN</span>
+      <span class="keyword-tag" onclick="doSearchKeyword('MOBILE')">MOBILE</span>
+    </div>
+
+    <div style="font-size:12px;color:var(--gray-500);padding:0 0 14px;">Theo TechPulse · 22/05/2026 08:00 (GMT +7)</div>
+  </div>
+
+  <div class="ad-modern" style="margin-top:0;">
+    <div><div class="ad-modern-text">📢 Không gian quảng cáo — <a href="#" style="color:var(--blue-link);font-size:11px;">Đặt quảng cáo tại đây</a></div></div>
+    <div class="ad-modern-label">Quảng cáo</div>
+  </div>
+
+  <!-- Related articles -->
+  <div class="related-section">
+    <div class="section-title-bar">Tin liên quan</div>
+    <a class="related-item" href="#" onclick="goHome();return false;">
+      <img class="related-thumb"
+        src="https://images.unsplash.com/photo-1622445262465-2481c4574875?w=800&auto=format&fit=crop&q=80"
+        alt="So sánh pin iPhone vs Android"
+      <div>
+        <div class="related-cat">Mobile</div>
+        <div class="related-title">iPhone 17 dùng pin silicon-carbon 4500mAh: Apple đã đuổi kịp Android về dung lượng?</div>
+        <div class="related-time">1 giờ trước</div>
+      </div>
+    </a>
+    <a class="related-item" href="#" onclick="goHome();return false;">
+      <img class="related-thumb"
+        src="https://images.pexels.com/photos/15104273/pexels-photo-15104273.jpeg?auto=compress&cs=tinysrgb&w=800"
+        alt="Sạc không dây điện thoại"
+      <div>
+        <div class="related-cat">Đồ chơi số</div>
+        <div class="related-title">Sạc không dây 50W: Tiện lợi nhưng pin lão hóa nhanh hơn sạc có dây đến 30%</div>
+        <div class="related-time">3 giờ trước</div>
+      </div>
+    </a>
+    <a class="related-item" href="#" onclick="goHome();return false;">
+      <img class="related-thumb"
+        src="https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&auto=format&fit=crop&q=80"
+        alt="Chip Snapdragon 8 Elite">
+      <div>
+        <div class="related-cat">Đồ chơi số</div>
+        <div class="related-title">Snapdragon 8 Elite Gen 2 ra mắt: Hiệu năng AI tăng 45% nhưng tiêu thụ điện có thực sự thấp hơn?</div>
+        <div class="related-time">5 giờ trước</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="related-section">
+    <div class="section-title-bar">Tin mới nhất</div>
+    <a class="related-item" href="#" onclick="goHome();return false;">
+      <img class="related-thumb"
+        src="https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=800&auto=format&fit=crop&q=80"
+        alt="Android 16 beta">
+      <div>
+        <div class="related-cat">Mobile</div>
+        <div class="related-title">Android 16 thêm tính năng "Pin AI": Tự học thói quen sạc để kéo dài tuổi thọ pin</div>
+        <div class="related-time">30 phút trước</div>
+      </div>
+    </a>
+    <a class="related-item" href="#" onclick="goHome();return false;">
+      <img class="related-thumb"
+        src="https://images.unsplash.com/photo-1622445262465-2481c4574875?w=800&auto=format&fit=crop&q=80"
+        alt="Xe điện công nghệ pin">
+      <div>
+        <div class="related-cat">Xe</div>
+        <div class="related-title">Cùng công nghệ pin solid-state: Xe điện và smartphone sẽ cùng được hưởng lợi từ 2027?</div>
+        <div class="related-time">2 giờ trước</div>
+      </div>
+    </a>
+    <a class="related-item" href="#" onclick="goHome();return false;">
+      <img class="related-thumb"
+        src="https://images.unsplash.com/photo-1678911820864-a24a5697be5a?w=400&auto=format&fit=crop&q=80"
+        alt="Điện thoại gấp pin">
+      <div>
+        <div class="related-cat">Mobile</div>
+        <div class="related-title">Điện thoại gấp 2026: Pin nhỏ hơn nhưng LTPO 1–165Hz giúp bù đắp được bao nhiêu?</div>
+        <div class="related-time">4 giờ trước</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Comments -->
+  <div class="comment-section">
+    <div class="comment-section-title">💬 Bình luận</div>
+    <div class="comment-input-box">
+      <textarea id="commentInput" placeholder="Chia sẻ ý kiến của bạn về bài viết này..."></textarea>
+      <div class="comment-input-footer">
+        <span style="font-size:12px;color:var(--gray-500);">Bình luận lịch sự, tôn trọng nhau.</span>
+        <button class="comment-submit" onclick="submitComment()">Gửi</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="commentsContainer" class="comments-list"></div>
+  <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreComments()">Xem thêm bình luận</button>
+  <div id="noMoreMsg" class="no-more-comments" style="display:none">─── Đã hết bình luận ───</div>
+
+  <div class="ad-modern">
+    <div><div class="ad-modern-text">📢 Không gian quảng cáo — <a href="#" style="color:var(--blue-link);font-size:11px;">Đặt quảng cáo tại đây</a></div></div>
+    <div class="ad-modern-label">Quảng cáo</div>
+  </div>
+
+  <footer class="site-footer">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="footer-brand">TechPulse</div>
+        <div class="footer-manager">Chịu trách nhiệm quản lý nội dung:<br><strong>Mr Lunar</strong></div>
+      </div>
+      <div class="footer-op">
+        <span style="font-size:10px;color:#aaa;">VẬN HÀNH BỞI</span>
+        <strong>TECHCORP</strong>
+      </div>
+    </div>
+    <div class="footer-addr">
+      <strong>TRỤ SỞ HÀ NỘI:</strong> Tầng 22, Tòa nhà Center Building, Hapulico Complex,
+      Số 01, phố Nguyễn Huy Tưởng, phường Thanh Xuân Trung, quận Thanh Xuân, Hà Nội<br>
+      Điện thoại: 024 7309 5555 · Email: info@techpulse.vn<br>
+      <strong>VPĐD TẠI TP.HCM:</strong> Tầng 4, Tòa nhà Zeta, số 127 Võ Văn Tần, Phường 6, Quận 3, TP.HCM
+    </div>
+    <div class="footer-copy">
+      © Copyright 2010 – 2026 · Công ty Cổ phần TechCorp<br>
+      Tầng 17–21, Tòa nhà Center Building – Hapulico Complex, Số 01, phố Nguyễn Huy Tưởng, Thanh Xuân, Hà Nội<br>
+      Hỗ trợ quảng cáo: 02473 007 108<br>
+      Giấy phép thiết lập trang thông tin điện tử tổng hợp trên mạng số 460/GP-TTĐT do Sở Thông tin và Truyền thông Hà Nội cấp ngày 03/02/2016
+    </div>
+  </footer>
+</div>
+
+<!-- VIEW: SEARCH RESULTS -->
+<div id="view-search" class="view">
+  <div class="search-results-header">
+    <h2>Kết quả: "<span id="searchQueryDisplay"></span>"</h2>
+    <button style="background:none;border:none;font-size:13px;color:var(--blue-link);cursor:pointer;" onclick="goBack()">✕ Đóng</button>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-chip active" onclick="setFilter('relevant',this)">Liên quan nhất</button>
+    <button class="filter-chip" onclick="setFilter('newest',this)">Mới nhất</button>
+    <button class="filter-chip" onclick="setFilter('popular',this)">Phổ biến nhất</button>
+    <button class="filter-chip" onclick="setFilter('featured',this)">Nổi bật nhất</button>
+  </div>
+  <div id="searchResultsList"></div>
+</div>
+
+<!-- ERROR VIEWS -->
+<div id="view-error-network" class="view">
+  <div class="error-view">
+    <div class="error-icon">📡</div>
+    <div class="error-title">Mất kết nối mạng</div>
+    <div class="error-desc">Không thể kết nối đến máy chủ. Kiểm tra lại đường truyền internet của bạn và thử lại.</div>
+    <button class="error-action" onclick="showView('article')">↺ Thử lại</button>
+  </div>
+</div>
+<div id="view-error-empty" class="view">
+  <div class="error-view">
+    <div class="error-icon">📭</div>
+    <div class="error-title">Không có nội dung</div>
+    <div class="error-desc">Chuyên mục này hiện chưa có bài viết nào. Hãy quay lại sau nhé!</div>
+    <button class="error-action" onclick="showView('article')">← Quay lại</button>
+  </div>
+</div>
+<div id="view-error-notfound" class="view">
+  <div class="error-view">
+    <div class="error-icon">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <line x1="8" y1="11" x2="14" y2="11"/>
+      </svg>
+    </div>
+    <div class="error-title">Không tìm thấy kết quả</div>
+    <div class="error-desc">Không có bài viết nào khớp với từ khóa của bạn. Thử tìm với từ khóa khác.</div>
+    <button class="error-action" onclick="openSearch()">🔍 Tìm kiếm lại</button>
+  </div>
+</div>
+<div id="view-error-gone" class="view">
+  <div class="error-view">
+    <div class="error-icon">🗑️</div>
+    <div class="error-title">Nội dung không tồn tại</div>
+    <div class="error-desc">Bài viết này đã bị xóa hoặc địa chỉ không chính xác. Vui lòng kiểm tra lại đường dẫn.</div>
+    <button class="error-action" onclick="showView('article')">🏠 Về trang chủ</button>
+  </div>
+</div>
+
+<script>
+// ─── COMMENTS DATA ───
+// Viết thực theo chủ đề pin Android
+const ALL_COMMENTS = [
+  {id:1, author:'Minh Hải', time:'30 phút trước', text:'Bài này giải thích chuẩn quá. Tao vừa mua Samsung S25 Ultra pin 5000mAh mà dùng được có 10 tiếng thôi, chủ yếu vì 5G ở khu tao sống tín hiệu kém, máy cứ dò sóng liên tục.', likes:62, dislikes:2, replies:[
+    {id:101, author:'Thu Trang', time:'20 phút trước', text:'Đúng y chang, tắt 5G đi dùng 4G là pin tốt hơn hẳn luôn. Mà 5G ở VN hiện tại cũng chưa phổ biến bằng 4G nên tắt đi cũng không thiếu gì.', likes:28, dislikes:0, replies:[
+      {id:1001, author:'Đức Phong', time:'10 phút trước', text:'Tao cũng làm vậy, tắt 5G ở nhà bật 4G. Nhưng khi ra ngoài đường vẫn muốn 5G để tải nhanh hơn.', likes:8, dislikes:1, replies:[]}
+    ]},
+    {id:102, author:'Quốc Bảo', time:'15 phút trước', text:'Vùng tín hiệu chuyển tiếp 4G/5G mới chết người. Máy cứ chạy tới chạy lui giữa hai mạng, pin hết nhanh khủng khiếp.', likes:19, dislikes:0, replies:[]}
+  ]},
+  {id:2, author:'Lan Phương', time:'1 giờ trước', text:'Cái mục ứng dụng nền nói chuẩn lắm. TikTok với Facebook của tao chiếm gần 20% pin dù ngày hôm đó tao không mở chúng lần nào. Đã restrict cả hai thì đỡ hơn nhiều.', likes:44, dislikes:3, replies:[
+    {id:201, author:'Việt Anh', time:'45 phút trước', text:'Facebook đặc biệt tệ về background activity. Có hẳn các nghiên cứu chỉ ra Facebook giữ wakelock không cần thiết trong vài giờ liên tục.', likes:31, dislikes:1, replies:[]}
+  ]},
+  {id:3, author:'Trọng Nhân', time:'2 giờ trước', text:'Mẹo Dark Mode trên OLED thực sự hiệu quả. Tao đổi toàn bộ hệ thống sang dark và pin tăng thêm khoảng 1.5 tiếng mỗi ngày so với trước, không thay đổi gì khác.', likes:37, dislikes:0, replies:[]},
+  {id:4, author:'Hồng Vân', time:'3 giờ trước', text:'Sạc 120W tiện nhưng thật ra không cần thiết với hầu hết người. Tao dùng sạc 25W ban đêm, sáng dậy là đầy, pin xài 2 năm vẫn còn 88% dung lượng.', likes:29, dislikes:2, replies:[
+    {id:401, author:'Khánh Duy', time:'2 giờ trước', text:'Đúng, sạc chậm qua đêm tốt cho pin hơn nhiều. Mấy máy Xiaomi cũng có tính năng "optimal charging" để không sạc quá 80% rồi mới lên 100% trước khi thức dậy.', likes:18, dislikes:0, replies:[
+      {id:4001, author:'Mỹ Linh', time:'1 giờ trước', text:'Samsung cũng có chế độ này, gọi là "Bảo vệ pin" trong cài đặt. Nhiều người không biết tính năng này tồn tại.', likes:12, dislikes:0, replies:[]}
+    ]}
+  ]},
+  {id:5, author:'Tiến Lộc', time:'4 giờ trước', text:'Cái LTPO thật sự là công nghệ hay. Màn hình LTPO 1-120Hz tự điều chỉnh ngon hơn hẳn so với khóa cứng 120Hz. Pixel 9 Pro xài thoải mái cả ngày nhờ công nghệ này.', likes:23, dislikes:1, replies:[]},
+  {id:6, author:'Ngọc Diệp', time:'5 giờ trước', text:'Game Genshin Impact ăn 3000-4000mW là con số kinh khủng. Tao mới thử đo bằng app theo dõi pin, chạy 30 phút Genshin thì mất hơn 20% pin của máy 5000mAh. Rõ ràng thật.', likes:41, dislikes:4, replies:[
+    {id:601, author:'Hùng Cường', time:'4 giờ trước', text:'Game mobile 3D bây giờ đồ họa tương đương console rẻ tiền, đương nhiên ngốn điện là phải rồi. Chơi xong nóng máy nóng tay luôn.', likes:15, dislikes:0, replies:[]}
+  ]},
+  {id:7, author:'Thanh Thủy', time:'6 giờ trước', text:'Nhiều người không biết là pin lithium-ion ghét 2 điều nhất: sạc đầy 100% để cắm nguyên đêm và để hết về 0%. Cả hai đều làm pin lão hóa nhanh hơn.', likes:55, dislikes:1, replies:[
+    {id:701, author:'Bảo Long', time:'5 giờ trước', text:'Thêm vào đó là nhiệt độ cao. Để điện thoại trong xe hơi giữa trời nắng mùa hè là giết pin từ từ.', likes:22, dislikes:0, replies:[]}
+  ]},
+  {id:8, author:'Đình Khoa', time:'7 giờ trước', text:'Bài viết tốt nhưng thiếu một điểm: màn hình Always-On Display cũng ăn pin khá nhiều dù chỉ hiện giờ và thông báo. Tắt AOD đi tiết kiệm được kha khá.', likes:18, dislikes:0, replies:[]},
+  {id:9, author:'Phương Thảo', time:'8 giờ trước', text:'Camera AI nhận diện cảnh liên tục tệ hơn tao tưởng. Hôm qua thử tắt tính năng "AI Camera" đi chỉ dùng camera thường, pin đỡ hẳn mà chất lượng ảnh không khác nhiều trong điều kiện sáng tốt.', likes:26, dislikes:2, replies:[]},
+  {id:10, author:'Văn Minh', time:'9 giờ trước', text:'Hy vọng pin solid-state thương mại hóa sớm. Nghe nói Samsung đang thử nghiệm cho Galaxy S26 Ultra, nếu thành công thì vừa pin trâu vừa không lo lão hóa nhanh nữa.', likes:34, dislikes:1, replies:[
+    {id:10011, author:'Thu Hằng', time:'8 giờ trước', text:'Solid-state còn đắt lắm, chắc phải 2028-2030 mới xuống tầm giá phổ thông được thôi.', likes:11, dislikes:0, replies:[]}
+  ]},
+  {id:11, author:'Quỳnh Anh', time:'10 giờ trước', text:'Adaptive refresh rate trên điện thoại tầm trung của tao không có LTPO thật, chỉ là 60/90/120Hz chuyển đổi thủ công. Vẫn nên để 90Hz thay vì 120Hz nếu không thấy khác biệt nhiều.', likes:14, dislikes:0, replies:[]},
+  {id:12, author:'Hải Đăng', time:'11 giờ trước', text:'Tao test thử tắt Wi-Fi khi ra ngoài thay vì để máy tự tìm mạng — pin cũng đỡ hơn. Wi-Fi scanning liên tục để tìm mạng quen cũng tốn điện dù nhỏ.', likes:9, dislikes:1, replies:[]},
+  {id:13, author:'Ngân Hà', time:'12 giờ trước', text:'Cảm ơn bài viết! Đi làm hay bị hết pin lúc 4-5 giờ chiều rất phiền. Thử tắt đồng bộ nền của mấy app ít dùng xem sao.', likes:7, dislikes:0, replies:[]},
+  {id:14, author:'Công Danh', time:'13 giờ trước', text:'Một mẹo thực tế nữa: tắt tính năng rung khi bàn phím. Motor rung trong điện thoại ăn điện nhiều hơn người ta nghĩ, đặc biệt khi nhắn tin cả ngày.', likes:21, dislikes:0, replies:[]},
+  {id:15, author:'Yến Nhi', time:'14 giờ trước', text:'Bài hay, chia sẻ cho cả nhà đọc. Điện thoại Android ngày càng phức tạp hơn và người dùng cần hiểu kỹ hơn để dùng tốt, không chỉ mua về rồi than pin kém.', likes:16, dislikes:0, replies:[]}
+];
+
+let shownCount = 0;
+const BATCH_SIZE_INIT = 10;
+const BATCH_SIZE_MORE = 5;
+let commentLikes = {};
+let replyOpenState = {};
+let activeReplyId = null;
+let previousView = 'article';
+
+// ─── VIEW MANAGEMENT ───
+function showView(name) {
+  if (name === 'home') name = 'article';
+  const el = document.getElementById('view-' + name);
+  if (!el) return;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+  closeMenu();
+  closeSearch();
+}
+function goHome() { showView('article'); }
+function goBack() { showView(previousView || 'article'); }
+
+// ─── MENU ───
+function openMenu() {
+  document.getElementById('menu-drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('show');
+}
+function closeMenu() {
+  document.getElementById('menu-drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('show');
+}
+function navCat(cat) {
+  closeMenu();
+  document.getElementById('searchInput').value = cat;
+  doSearch();
+}
+
+// ─── SEARCH ───
+let searchTabActive = 'cat';
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('active');
+  setTimeout(() => document.getElementById('searchInput').focus(), 100);
+}
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('active');
+}
+function setSearchTab(tab, btn) {
+  searchTabActive = tab;
+  document.querySelectorAll('.search-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('searchCatPanel').style.display = tab === 'cat' ? 'grid' : 'none';
+  document.getElementById('searchSocialPanel').style.display = tab === 'social' ? 'block' : 'none';
+}
+function doSearchCat(cat) {
+  document.getElementById('searchInput').value = cat;
+  doSearch();
+}
+function doSearchKeyword(kw) {
+  document.getElementById('searchInput').value = kw;
+  doSearch();
+}
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  closeSearch();
+  previousView = document.querySelector('.view.active')?.id?.replace('view-','') || 'article';
+  document.getElementById('searchQueryDisplay').textContent = q;
+  const FAKE_RESULTS = [
+    {cat:'Mobile', title:'Pin solid-state cho smartphone: Samsung sẽ thương mại hóa vào 2027?', time:'2 giờ trước'},
+    {cat:'Thủ thuật', title:'7 cách tắt app nền Android để pin dùng được cả ngày', time:'4 giờ trước'},
+    {cat:'Đồ chơi số', title:'So sánh sạc 65W vs 120W: Tốc độ và giá pin phải trả', time:'6 giờ trước'},
+    {cat:'Mobile', title:'Xiaomi 16 Ultra ra mắt: Pin 6100mAh LTPO, sạc 90W không dây', time:'8 giờ trước'},
+    {cat:'Thủ thuật', title:'Cách kiểm tra sức khỏe pin Android chính xác, không cần app thứ ba', time:'1 ngày trước'},
+  ];
+  const html = FAKE_RESULTS.map(r => `
+    <div class="search-result-item" onclick="goHome()">
+      <div>
+        <div class="related-cat">${r.cat}</div>
+        <div class="related-title">${r.title}</div>
+        <div class="related-time">${r.time}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('searchResultsList').innerHTML = html || '<div style="padding:24px;text-align:center;color:#777;">Không tìm thấy kết quả phù hợp.</div>';
+  showView('search');
+}
+function setFilter(f, btn) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── COMMENTS ───
+function findComment(list, id) {
+  for (const c of list) {
+    if (c.id === id) return c;
+    if (c.replies) {
+      const found = findComment(c.replies, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+function renderReplyBox(parentId, parentAuthor) {
+  return `
+    <div class="inline-reply-box" id="replybox_${parentId}">
+      <span class="reply-to-label">Phản hồi <strong>@${parentAuthor}</strong></span>
+      <textarea id="replyinput_${parentId}"
+        placeholder="@${parentAuthor} "
+        oninput="autoGrow(this)"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitReply(${parentId},'${parentAuthor.replace(/'/g,"\\'")}')}"
+      >@${parentAuthor} </textarea>
+      <div class="inline-reply-footer">
+        <button class="cancel-reply-btn" onclick="cancelReply()">Huỷ</button>
+        <button class="comment-submit" onclick="submitReply(${parentId},'${parentAuthor.replace(/'/g,"\\'")}')">Gửi</button>
+      </div>
+    </div>`;
+}
+function renderComment(c, depth = 0) {
+  const isLiked = commentLikes['like_' + c.id];
+  const isDisliked = commentLikes['dislike_' + c.id];
+  const hasReplies = c.replies && c.replies.length > 0;
+  const isOpen = replyOpenState[c.id];
+  const bubbleClass = depth === 0 ? 'comment-bubble' : 'reply-bubble';
+  const wrapClass = depth === 0 ? 'comment-item' : 'reply-item';
+  const replyBoxHTML = activeReplyId === c.id ? renderReplyBox(c.id, c.author) : '';
+  let repliesHTML = '';
+  if (hasReplies) {
+    const childrenHTML = isOpen ? c.replies.map(r => renderComment(r, depth + 1)).join('') : '';
+    repliesHTML = `
+      <button class="show-replies-btn" onclick="toggleReplies(${c.id})">
+        ${isOpen ? '▼' : '▶'} ${c.replies.length} phản hồi
+      </button>
+      <div class="replies ${isOpen ? 'open' : ''}" id="replies_${c.id}">${childrenHTML}</div>`;
+  }
+  return `
+    <div class="${wrapClass}" id="comment_${c.id}">
+      <div class="${bubbleClass}">
+        <div class="comment-author">${c.author} <span class="time">${c.time}</span></div>
+        <div class="comment-text">${c.text}</div>
+        <div class="comment-actions">
+          <button class="comment-action-btn ${isLiked ? 'liked' : ''}" onclick="likeComment(${c.id},1)">
+            👍 ${c.likes + (isLiked ? 1 : 0)}
+          </button>
+          <button class="comment-action-btn ${isDisliked ? 'liked' : ''}" onclick="likeComment(${c.id},-1)">
+            👎 ${c.dislikes + (isDisliked ? 1 : 0)}
+          </button>
+          <button class="comment-action-btn reply-btn" onclick="openReplyBox(${c.id})">Trả lời</button>
+        </div>
+      </div>
+      ${replyBoxHTML}
+      ${repliesHTML}
+    </div>`;
+}
+function openReplyBox(id) {
+  activeReplyId = activeReplyId === id ? null : id;
+  if (activeReplyId !== null) replyOpenState[id] = true;
+  refreshComments();
+  if (activeReplyId !== null) {
+    requestAnimationFrame(() => {
+      const ta = document.getElementById('replyinput_' + id);
+      if (ta) { ta.focus(); const len = ta.value.length; ta.setSelectionRange(len, len); }
+    });
+  }
+}
+function cancelReply() { activeReplyId = null; refreshComments(); }
+function submitReply(parentId, parentAuthor) {
+  const ta = document.getElementById('replyinput_' + parentId);
+  if (!ta) return;
+  const raw = ta.value.trim();
+  if (!raw || raw === '@' + parentAuthor) return;
+  const text = raw.startsWith('@' + parentAuthor) ? raw : '@' + parentAuthor + ' ' + raw;
+  const newReply = { id: Date.now(), author: 'Bạn', time: 'Vừa xong', text, likes: 0, dislikes: 0, replies: [] };
+  const parent = findComment(ALL_COMMENTS, parentId);
+  if (parent) { parent.replies.push(newReply); replyOpenState[parentId] = true; }
+  activeReplyId = null;
+  refreshComments();
+  requestAnimationFrame(() => {
+    const el = document.getElementById('comment_' + newReply.id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+function autoGrow(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+function toggleReplies(id) { replyOpenState[id] = !replyOpenState[id]; refreshComments(); }
+function likeComment(id, dir) {
+  const key = (dir === 1 ? 'like_' : 'dislike_') + id;
+  const opp = (dir === 1 ? 'dislike_' : 'like_') + id;
+  commentLikes[key] = !commentLikes[key];
+  if (commentLikes[key]) commentLikes[opp] = false;
+  refreshComments();
+}
+function refreshComments() {
+  const container = document.getElementById('commentsContainer');
+  if (!container) return;
+  container.innerHTML = ALL_COMMENTS.slice(0, shownCount).map(c => renderComment(c, 0)).join('');
+  updateLoadMore();
+}
+function initComments() { shownCount = Math.min(BATCH_SIZE_INIT, ALL_COMMENTS.length); refreshComments(); }
+function loadMoreComments() { shownCount = Math.min(shownCount + BATCH_SIZE_MORE, ALL_COMMENTS.length); refreshComments(); }
+function updateLoadMore() {
+  const btn = document.getElementById('loadMoreBtn');
+  const noMore = document.getElementById('noMoreMsg');
+  if (!btn || !noMore) return;
+  btn.style.display = shownCount >= ALL_COMMENTS.length ? 'none' : 'block';
+  noMore.style.display = shownCount >= ALL_COMMENTS.length ? 'block' : 'none';
+}
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text) return;
+  ALL_COMMENTS.unshift({ id: Date.now(), author: 'Bạn', time: 'Vừa xong', text, likes: 0, dislikes: 0, replies: [] });
+  shownCount++;
+  input.value = '';
+  refreshComments();
+}
+
+// ─── SHARE ───
+function shareArticle(platform) {
+  const url = window.location.href;
+  const title = document.title;
+  if (platform === 'facebook') {
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank', 'width=600,height=400');
+  } else if (platform === 'zalo') {
+    window.open('https://zalo.me/share/url?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title), '_blank');
+  }
+}
+function copyLink() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = event.target.closest('.share-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Đã copy!';
+    setTimeout(() => btn.innerHTML = orig, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    alert('Đã copy link!');
+  });
+}
+
+// ─── PROGRESS BAR ───
+window.addEventListener('scroll', () => {
+  const el = document.getElementById('view-article');
+  if (!el || !el.classList.contains('active')) return;
+  const total = document.body.scrollHeight - window.innerHeight;
+  const pct = total > 0 ? (window.scrollY / total * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// ─── INIT ───
+initComments();
+</script>
+</body>
+</html>
